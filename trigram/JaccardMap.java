@@ -16,25 +16,48 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class JaccardMap {
 
-    // http://commons.apache.org/proper/commons-text/jacoco/org.apache.commons.text.similarity/JaccardSimilarity.java.html
-    public static Double calculateJaccardSimilarity(final CharSequence left, final CharSequence right) {
-        final int leftLength = left.length();
-        final int rightLength = right.length();
-        if (leftLength == 0 || rightLength == 0) {
+    private static final int ngram = 3;
+
+    public static final Map<String, Integer> getGrammed(final String myString) {
+
+        HashMap<String, Integer> gramMap = new HashMap<String, Integer>();
+
+        for (int i = 0; i < (myString.length() - ngram + 1); i++) {
+            String shingle = myString.substring(i, i + ngram);
+            Integer old = gramMap.get(shingle);
+            if (old != null) {
+                gramMap.put(shingle, old + 1);
+            } else {
+                gramMap.put(shingle, 1);
+            }
+        }
+
+        return Collections.unmodifiableMap(gramMap);
+    }
+
+    public static Double calculateJaccardSimilarity(final String s1, final String s2) {
+        if (s1 == null || s1.length() == 0) {
             return 0d;
         }
-        final Set<Character> leftSet = new HashSet<>();
-        for (int i = 0; i < leftLength; i++) {
-            leftSet.add(left.charAt(i));
+
+        if (s2 == null || s2.length() == 0) {
+            return 0d;
         }
-        final Set<Character> rightSet = new HashSet<>();
-        for (int i = 0; i < rightLength; i++) {
-            rightSet.add(right.charAt(i));
+
+        if (s1.equals(s2)) {
+            return 1.0;
         }
-        final Set<Character> unionSet = new HashSet<>(leftSet);
-        unionSet.addAll(rightSet);
-        final int intersectionSize = leftSet.size() + rightSet.size() - unionSet.size();
-        return 1.0d * intersectionSize / unionSet.size();
+
+        Map<String, Integer> gramProfile = getGrammed(s1);
+        Map<String, Integer> gramProfile2 = getGrammed(s2);
+
+        Set<String> union = new HashSet<String>();
+        union.addAll(gramProfile.keySet());
+        union.addAll(gramProfile2.keySet());
+
+        int inter = gramProfile.keySet().size() + gramProfile2.keySet().size() - union.size();
+
+        return 1.0 - (1.0 * inter / union.size());
     }
 
     /** @return an array of adjacent letter pairs contained in the input string */
@@ -93,7 +116,7 @@ public class JaccardMap {
                 word = itr.nextToken().toLowerCase();
                 for(String word2 : WordMap){
 
-                    Double similarity = 1 - calculateJaccardSimilarity(word, word2);
+                    Double similarity = calculateJaccardSimilarity(word, word2);
 
                     // which have Jaccard similarity not 0 and no larger than 0.15?
                     if ((similarity > 0.0) && (similarity <= 0.15)) {
@@ -113,7 +136,7 @@ public class JaccardMap {
         }
 
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "Jaccard NGram Map");
+        Job job = Job.getInstance(conf, "Jaccard  Map");
 
         Path output = new Path(args[2]);
         FileSystem fs = FileSystem.get(conf);
