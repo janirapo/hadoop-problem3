@@ -12,11 +12,12 @@ datasets are now inconsistent due to misspellings (https://en.wikipedia.org/wiki
 Can you find similar pairs of records, one from each dataset, which have Jaccard distance > 0 and <= 0.15​?
 
 Fill the following table: (20 points)
+```
 | Gram size | Result size | Running time on a single VM (s) | Running time on a multiple VMs (s), specify how many VMs |
 | --------- | ----------- | ------------------------------- | -------------------------------------------------------- |
-| 2 (bi-gram) | --------- | ------------------------------- | -------------------------------------------------------- |
-| 3 (tri-gram) | -------- | ------------------------------- | -------------------------------------------------------- |
-
+| 2 (bi-gram) | | | |
+| 3 (tri-gram) | | | |
+```
 2. Describe your algorithm for this problem, and upload your source codes and analyze the
 performance of your codes. (20 points)
 
